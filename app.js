@@ -8,8 +8,7 @@ const mongoose = require('mongoose');
 const { v4: uuidv4 } = require('uuid');
 const multer = require('multer');
 
-const CONNECTION_STRING =
-  'mongodb+srv://nj:gRaVWaT0CL1FDB4k@cluster0.qk2yilc.mongodb.net/restapi?retryWrites=true&w=majority';
+const CONNECTION_STRING = '';
 
 // app.use(bodyParser.urlencoded()); // x-www-form-urlencoded
 app.use(bodyParser.json()); // application/json
