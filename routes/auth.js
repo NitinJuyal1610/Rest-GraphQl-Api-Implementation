@@ -13,12 +13,11 @@ router.put(
     body('email')
       .isEmail()
       .withMessage('Please enter a valid email.')
-      .custom((value, { req }) => {
-        return User.findOne({ email: value }).then((user) => {
-          if (user) {
-            return Promise.reject('E-mail address already exists!');
-          }
-        });
+      .custom(async (value, { req }) => {
+        const user = await User.findOne({ email: value });
+        if (user) {
+          return Promise.reject('E-mail address already exists!');
+        }
       })
       .normalizeEmail(),
 
