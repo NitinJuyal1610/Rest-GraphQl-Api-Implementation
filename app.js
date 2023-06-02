@@ -33,7 +33,8 @@ const fileFilter = (req, file, cb) => {
     cb(null, true);
   } else cb(null, false);
 };
-//corse setup
+
+//cors setup
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader(
@@ -65,8 +66,13 @@ mongoose
   .connect(CONNECTION_STRING)
   .then((result) => {
     console.log('Database Connected');
-    app.listen(8080, () => {
+    const server = app.listen(8080, () => {
       console.log('Server started');
+    });
+
+    const io = require('./socket').init(server);
+    io.on('connection', (socket) => {
+      console.log('Client Connected');
     });
   })
   .catch((err) => console.log(err));

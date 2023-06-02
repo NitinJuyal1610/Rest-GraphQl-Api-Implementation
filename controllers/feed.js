@@ -3,6 +3,7 @@ const Post = require('../models/post');
 const path = require('path');
 const fs = require('fs');
 const User = require('../models/user');
+const io = require('../socket');
 
 exports.getPosts = async (req, res, next) => {
   const currentPage = req.query.page || 1;
@@ -11,6 +12,7 @@ exports.getPosts = async (req, res, next) => {
   try {
     const totalItems = await Post.find().countDocuments();
     const posts = await Post.find()
+      .sort({ createdAt: -1 })
       .populate('creator')
       .skip((currentPage - 1) * perPage)
       .limit(perPage);
@@ -60,6 +62,10 @@ exports.createPost = async (req, res, next) => {
     user.posts.push(post);
     user.save();
 
+    io.getIO().emit('posts', {
+      action: 'create',
+      post: post,
+    });
     res.status(201).json({
       message: 'Post created successfully !',
       post: post,
@@ -117,14 +123,14 @@ exports.updatePost = async (req, res, next) => {
     throw error;
   }
   try {
-    const post = await Post.findById(postId);
+    const post = await Post.findById(postId).populate('creator');
     if (!post) {
       const error = new Error('Could not find post.');
       error.statusCode = 404;
       throw error;
     }
 
-    if (post.creator.toString() !== req.userId.toString()) {
+    if (post.creator._id.toString() !== req.userId.toString()) {
       const error = new Error('Not Authorized to do this Operation !');
       error.statusCode = 422;
       throw error;
@@ -138,6 +144,10 @@ exports.updatePost = async (req, res, next) => {
     post.content = content;
     const result = await post.save();
 
+    io.getIO().emit('posts', {
+      action: 'update',
+      post: result,
+    });
     res.status(200).json({
       message: 'Post updated',
       post: result,
@@ -174,6 +184,11 @@ exports.deletePost = async (req, res, next) => {
 
     user.posts.pull(postId);
     await user.save();
+
+    io.getIO().emit('posts', {
+      action: 'delete',
+      post: postId,
+    });
 
     res.status(200).json({ message: 'Deleted Post!' });
   } catch (err) {
