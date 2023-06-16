@@ -1,6 +1,4 @@
-# SimpleRestApi
-
-Rest Api using Nodejs/Express.js
+# Rest-GraphQl-Api-Implementation
 
 
 ## Tech Stack
